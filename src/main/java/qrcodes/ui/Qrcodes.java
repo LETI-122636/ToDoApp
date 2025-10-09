@@ -11,10 +11,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
 public class Qrcodes {
-    public static void main(String[] args) throws WriterException, IOException {
-        String text = "https://www.example.com"; // Conteúdo do QR code
-        String filePath = "qrcode.png"; // Onde guardar a imagem
 
+    // Método utilitário para gerar QR Code
+    public static void gerarQrCode(String text, String filePath) throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 250, 250);
 
@@ -22,5 +21,14 @@ public class Qrcodes {
         MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
 
         System.out.println("QR Code gerado em: " + path.toAbsolutePath());
+    }
+
+    // Método main apenas para teste manual (pode remover se quiser)
+    public static void main(String[] args) {
+        try {
+            gerarQrCode("https://www.example.com", "qrcode.png");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
