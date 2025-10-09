@@ -30,44 +30,99 @@ public class PDF_create {
         try (PDDocument document = new PDDocument();
              ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
-            // Criar uma página
+            PDType1Font fonteTitulo = PDType1Font.HELVETICA_BOLD;
+            PDType1Font fonteTexto = PDType1Font.HELVETICA;
+            int tamanhoFonteTitulo = 18;
+            int tamanhoFonteTexto = 12;
+
+            float margem = 50;
+            float larguraMax = 500; // largura útil do texto
+            float yStart = 750;
+            float y = yStart;
+            float espacoLinha = 15;
+
             PDPage page = new PDPage();
             document.addPage(page);
+            PDPageContentStream contentStream = new PDPageContentStream(document, page);
 
-            // Adicionar conteúdo à página
-            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+            // Cabeçalho
+            contentStream.beginText();
+            contentStream.setFont(fonteTitulo, tamanhoFonteTitulo);
+            contentStream.newLineAtOffset(margem, y);
+            contentStream.showText(titulo);
+            contentStream.endText();
 
-                // Cabeçalho
-                contentStream.beginText();
-                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 18);
-                contentStream.newLineAtOffset(50, 750);
-                contentStream.showText(titulo);
-                contentStream.endText();
+            y -= 40; // espaço após título
 
-                // Conteúdo principal (note: showText não quebra linhas automaticamente)
-                contentStream.beginText();
-                contentStream.setFont(PDType1Font.HELVETICA, 12);
-                contentStream.newLineAtOffset(50, 700);
-                contentStream.showText(conteudo);
-                contentStream.endText();
+            contentStream.beginText();
+            contentStream.setFont(fonteTexto, tamanhoFonteTexto);
+            contentStream.newLineAtOffset(margem, y);
 
-                // Rodapé (número de página)
-                contentStream.beginText();
-                contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 10);
-                contentStream.newLineAtOffset(50, 50);
-                contentStream.showText("Página 1");
-                contentStream.endText();
+            String[] paragrafos = conteudo.split("\n");
+
+            for (String paragrafo : paragrafos) {
+                String[] linhas = quebrarLinha(paragrafo, fonteTexto, tamanhoFonteTexto, larguraMax);
+
+                for (String linha : linhas) {
+                    if (y <= margem + 40) { // fim da página
+                        contentStream.endText();
+                        contentStream.close();
+
+                        page = new PDPage();
+                        document.addPage(page);
+                        contentStream = new PDPageContentStream(document, page);
+                        y = yStart;
+
+                        contentStream.beginText();
+                        contentStream.setFont(fonteTexto, tamanhoFonteTexto);
+                        contentStream.newLineAtOffset(margem, y);
+                    }
+
+                    contentStream.showText(linha);
+                    contentStream.newLineAtOffset(0, -espacoLinha);
+                    y -= espacoLinha;
+                }
+
+                // Espaço entre parágrafos
+                contentStream.newLineAtOffset(0, -espacoLinha);
+                y -= espacoLinha;
             }
 
-            // Salvar PDF para o stream em memória
+            contentStream.endText();
+
+            // Rodapé
+            contentStream.beginText();
+            contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 10);
+            contentStream.newLineAtOffset(50, 50);
+            contentStream.showText("Página 1");
+            contentStream.endText();
+            contentStream.close();
+
             document.save(baos);
             return baos.toByteArray();
-
-        } catch (IOException e) {
-            // Repassa a exceção para o chamador lidar (UI/Service)
-            throw e;
         }
     }
+
+    // Função auxiliar para quebrar linhas mesmo sem espaços
+    private static String[] quebrarLinha(String texto, PDType1Font fonte, int tamanhoFonte, float larguraMax) throws IOException {
+        java.util.List<String> linhas = new java.util.ArrayList<>();
+        int inicio = 0;
+
+        while (inicio < texto.length()) {
+            int fim = inicio + 1;
+            while (fim <= texto.length()) {
+                String parte = texto.substring(inicio, fim);
+                float largura = fonte.getStringWidth(parte) / 1000 * tamanhoFonte;
+                if (largura > larguraMax) break;
+                fim++;
+            }
+            linhas.add(texto.substring(inicio, fim - 1));
+            inicio = fim - 1;
+        }
+
+        return linhas.toArray(new String[0]);
+    }
+
     /**
      * Escrita dos bytes PDF para o HttpServletResponse para download no navegador.
      *
