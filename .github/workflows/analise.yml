@@ -1,4 +1,4 @@
-name: SonarQube Analysis
+name: SonarCloud Analysis
 
 on:
   push:
@@ -21,12 +21,9 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Build and analyze with SonarQube
+      - name: Build and analyze with SonarCloud
         run: mvn -B verify sonar:sonar \
           -Dsonar.projectKey=LETI-122636_ToDoApp \
+          -Dsonar.organization=leti-122636 \
+          -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-
-      - name: SonarQube Quality Gate Check
-        uses: SonarSource/sonarqube-quality-gate-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
