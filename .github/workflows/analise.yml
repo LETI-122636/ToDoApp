@@ -23,7 +23,7 @@ jobs:
 
       - name: Build and analyze with SonarQube
         run: mvn -B verify sonar:sonar \
-          -Dsonar.projectKey=teu_projectKey \
+          -Dsonar.projectKey=LETI-122636_ToDoApp \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       - name: SonarQube Quality Gate Check
