@@ -18,7 +18,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException
+import java.io.IOException;
 
 @Route("qrcodes")
 @PageTitle("QR Codes")
