@@ -2,6 +2,49 @@
 
 - [ ] TODO Replace or update this README with instructions relevant to your application
 
+# Pipeline de Build e Upload de JAR
+
+Este projeto inclui uma pipeline CI/CD configurada através do GitHub Actions para automatizar o processo de build e disponibilização do ficheiro JAR.
+A pipeline é executada automaticamente sempre que há um push para a branch main.
+
+1. Checkout do código
+
+A primeira etapa faz o checkout do código-fonte do repositório, garantindo que a pipeline tem acesso a todos os ficheiros necessários para o build.
+
+name: Checkout code
+uses: actions/checkout@v4
+with:
+  fetch-depth: 0
+
+2. Configuração do JDK 21
+
+Nesta etapa, é configurado o ambiente Java com a versão 21 do JDK, utilizando a distribuição Temurin, e ativada a cache do Maven para acelerar builds futuros.
+
+name: Set up JDK 21
+uses: actions/setup-java@v4
+with:
+  distribution: temurin
+  java-version: '21'
+  cache: maven
+
+3. Compilação com Maven
+
+O projeto é compilado através do Maven, que executa uma limpeza (clean) e cria o pacote (package), gerando o ficheiro .jar final.
+
+name: Build with Maven
+run: mvn -B clean package
+
+4. Upload do artefacto JAR
+
+Por fim, o artefacto resultante (ficheiro JAR) é armazenado nos artefactos do GitHub Actions, permitindo o seu download direto a partir da execução da pipeline.
+
+name: Upload JAR artifact
+uses: actions/upload-artifact@v4
+with:
+  name: todoapp-jar
+  path: target/*.jar
+
+
 ## Project Structure
 
 The sources of your App have the following structure:
